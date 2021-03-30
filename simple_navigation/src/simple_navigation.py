@@ -15,7 +15,7 @@ Points = {
 }
 
 def movebase_client(request):
-    """Recibe la petición de un servicio y asigna un goal al cliente move_base
+    """Recibe la peticion de un servicio y asigna un goal al cliente move_base
 
     Args:
         request: los parametros del mensaje del servicio
