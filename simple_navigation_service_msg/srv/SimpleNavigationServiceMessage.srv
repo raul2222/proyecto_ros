@@ -1,0 +1,5 @@
+# request
+int32 point
+---
+# response
+bool success
