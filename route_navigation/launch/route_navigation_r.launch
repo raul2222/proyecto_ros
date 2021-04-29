@@ -1,0 +1,7 @@
+<launch>
+    <node 
+        pkg="route_navigation" 
+        type="route_navigation_r.py" 
+        name="move_base_action_client" 
+        output="screen"/>
+</launch>

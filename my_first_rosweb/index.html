@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- css necesario para el efecto de scroll -->
+    <!-- boostrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="./css/indexStyle.css">
+</head>
+
+<body>
+<!-- nav, es distinto para integrarse con laas secciones -->
+  <div class="container">
+<!--     <nav class="navbar">
+      <ul>
+        
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#service">Service</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav> -->
+<!-- salir -->
+    <section id="home">
+      <h1>El mundo no duerme</h1>
+      <p class="lead">Las amenazas tampoco. Comienza a protegerte con los ultimos avances</p>
+      <button type="button" onclick="location.href = 'basic.html'" class="btn btn-info">Comenzar</button>
+      <p class="lead"></p>
+      <i class="glyphicon glyphicon-arrow-down bottom"></i>
+    </section>
+    <section id="about">
+      <h1>Lo que ofrecemos</h1>
+      <p class="lead">Estamos descubriendo dia a dia el poder de las amenazas digitales </p>
+      <p class="lead">Pero seguimos viviendo en un mundo fisico, igual de peligroso </p>
+      <p class="lead">Nosotros te ofrecemos una capa de porteccion contra este aspecto </p>
+      <p class="lead"></p>
+      <i class="glyphicon glyphicon-arrow-down bottom"></i>
+      
+    </section>
+    <section id="service">
+      <h1>Su casa y su negocio mas seguros</h1>
+      <p class="lead">Usamos los ultimos avances de ROS,IA, IOT y robotica </p>
+      <p class="lead">Esto nos permite adaptarnos a sus peticiones, por especificas que sean </p>
+      <p class="lead"></p>
+      <i class="glyphicon glyphicon-arrow-down bottom"></i>
+    </section>
+    <section id="contact">
+      <h1>Si desea saber mas</h1>
+      <p class="lead">O simplemente comentarnos cualquier aspecto, no dude en hacerlo </p>
+      <p class="lead">Nuestro correo es Robotica@IOT.com </p>
+
+    </section>
+  </div>
+</body>
+
+<script>
+
+  $('.navbar a').on('click', function (e) {
+    if (this.hash !== '') {
+      e.preventDefault();
+
+      const hash = this.hash;
+
+      $('html, body')
+        .animate({
+          scrollTop: $(hash).offset().top
+        }, 800);
+    }
+  });
+
+</script>
+
+
+</html>
