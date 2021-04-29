@@ -1,0 +1,3 @@
+<launch>
+<node pkg="simple_navigation" type="simple_navigation_r.py" name="movebase_client_py" output="screen"></node>
+</launch>
