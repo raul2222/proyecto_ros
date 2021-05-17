@@ -11,7 +11,7 @@
 #include <WebSocketsServer.h>
 #include "MLX90640_API.h"
 #include "MLX90640_I2C_Driver.h"
-#include "env.h"
+//#include "env.h"
 #include "webpage.h"
 
 WiFiServer server(80);
@@ -235,9 +235,9 @@ void Task1( void * parameter )
             minReading = mlx90640To[x];
           }
         }
-        avgReading = avgReading * 1.8 + 32;
-        maxReading = maxReading * 1.8 + 32;
-        minReading = minReading * 1.8 + 32;
+        avgReading = avgReading ;
+        maxReading = maxReading ;
+        minReading = minReading ;
         String output = "Max:";
         output.concat(maxReading);
         String minOutput = "Min:";
