@@ -50,9 +50,12 @@ void setup()
     WiFi.begin(ssid, password);
     WiFi.setHostname("esp32thing1");
     int retry = 0;
-    while (WiFi.status() != WL_CONNECTED) {
+    int numtotalretry = 0;
+    
+    while (WiFi.status() != WL_CONNECTED && numtotalretry < 40) {
         delay(1000);
         retry += 1;
+        numtotalretry += 1;
         Serial.print(".");
         if (retry > 4 ) {
           // Retry after 5 seconds
@@ -62,6 +65,10 @@ void setup()
         }
     }
 
+    Serial.println("");
+    Serial.println("Total intens to connect to Wifi: ");
+    Serial.println(numtotalretry);
+    delay(2000);
     Serial.println("");
     Serial.println("WiFi connected.");
     Serial.println("IP address: ");
@@ -258,7 +265,8 @@ void Task1( void * parameter )
     if (status != 0) {
         Serial.println("Parameter extraction failed");
     }
-    MLX90640_SetRefreshRate(MLX90640_address, 0x05);
+    //MLX90640_SetRefreshRate(MLX90640_address, 0x05);
+    MLX90640_SetRefreshRate(MLX90640_address, 0x02); //Set rate to 2Hz
     Wire.setClock(1000000L);
     float mlx90640Background[768];
     for( ;; )
@@ -289,6 +297,7 @@ void Task1( void * parameter )
       Serial.print("Read rate: ");
       Serial.print( 1000.0 / (stopReadTime - startTime), 2);
       Serial.println(" Hz");
+      delay(2000);
       tick += 1;
       if (tick > 10) {
           float maxReading = mlx90640To[0];
