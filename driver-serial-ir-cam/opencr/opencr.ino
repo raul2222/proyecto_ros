@@ -7,6 +7,7 @@ void setup() {
     Serial.begin(115200);
     delay(2000);
     Serial.println("<Arduino is ready>");
+    Serial2.begin(9600);
 }
 
 void loop() {
@@ -23,8 +24,8 @@ void recvWithStartEndMarkers() {
     char endMarker = '>';
     char rc;
  //
-    while (Serial1.available() > 0 && newData == false) {
-        rc = Serial1.read();
+    while (Serial2.available() > 0 && newData == false) {
+        rc = Serial2.read();
 
         if (recvInProgress == true) {
             if (rc != endMarker) {
