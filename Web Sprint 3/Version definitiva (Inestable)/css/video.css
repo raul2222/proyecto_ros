@@ -1,0 +1,28 @@
+/* Espacio reservado al video, poner siempre una resolucion tipica*/
+.feed{
+  display: inline-block;
+  background-color: green;
+  width: 854px;
+  height: 480px;
+}
+
+/* para asegurarse que siempre lo genere */
+.jumbotron {
+  min-height: 300px;
+}
+
+.map{
+  height: 420px;
+  height: 360px;
+  background-color: pink;
+}
+
+#centro{
+    position: relative; 
+    text-align: right;
+}
+
+#zona{
+    color: black;
+    
+}

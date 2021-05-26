@@ -1,0 +1,122 @@
+* {
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #333;
+    color: #fff;
+    height: 100vh;
+    line-height: 1.6;
+    overflow: hidden;
+  }
+  
+  .container {
+    width: 100%;
+    height: 100%;
+    /* para asegurar que el scroll sea suave */
+    overflow-y: scroll; 
+    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;
+  }
+
+  /* la mayoria de los siguientes elementos aseguran que las seciones se generen de forma correcta o asegurar el scroll */
+  .lead {
+    font-size: 1.5rem;
+  }
+  ::-webkit-scrollbar {
+    display: none;
+}
+  .navbar {
+    position: fixed;
+    top: 0;
+    z-index: 1;
+    width: 100%;
+    height: 60px;
+    
+    background: rgba(0,0,0,0.7);
+  }
+  
+  .navbar ul {
+    margin-right: 10rem;
+    width: 100%;
+  }
+  
+  .navbar ul li {
+    text-align: right;
+    margin-top: 1rem;
+    margin-right: 6rem;
+    
+  }
+  
+  .navbar ul li a {
+    text-decoration: none;
+    text-transform: uppercase;
+    color: #f4f4f4;
+  }
+  
+  .navbar ul li a:hover {
+    color: skyblue;
+  }
+  
+  section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    height: 100vh;
+    scroll-snap-align: center;
+  }
+  
+  section h1 {
+    font-size: 4rem;
+  }
+  
+h2 { 
+  background-color: rgba(0,0,0,.3);
+  color: #fff; 
+  display: inline;
+  padding: 2rem;
+  
+  /* Needs prefixing */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+
+#uwu{
+    font-size: 40px;
+}
+
+.modal-body{
+    color: black;
+}
+
+#arriba{
+    padding-top: -150px;
+    padding-bottom: -150px;
+}
+
+
+
+
+  /* imagenes*/
+  section#home {
+    background: url('img1.jpg') no-repeat center center/cover;;
+  }
+  
+  section#about {
+    background: url('img2.jpg') no-repeat center center/cover;;
+  }
+  
+  section#service {
+    background: url('img3.jpg') no-repeat center center/cover;;
+  }
+  
+  section#contact {
+    background: url('img4.jpg') no-repeat center center/cover;;
+  }
+  
