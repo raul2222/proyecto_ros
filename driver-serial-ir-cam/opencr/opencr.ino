@@ -22,7 +22,7 @@ void recvWithStartEndMarkers() {
     char startMarker = '<';
     char endMarker = '>';
     char rc;
- 
+ //
     while (Serial1.available() > 0 && newData == false) {
         rc = Serial1.read();
 
