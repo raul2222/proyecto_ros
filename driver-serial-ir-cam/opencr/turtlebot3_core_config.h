@@ -32,12 +32,14 @@
 #include <tf/transform_broadcaster.h>
 #include <nav_msgs/Odometry.h>
 
+
 #include <turtlebot3_msgs/SensorState.h>
 #include <turtlebot3_msgs/Sound.h>
 #include <turtlebot3_msgs/VersionInfo.h>
 
 #include <TurtleBot3.h>
 #include "turtlebot3_burger.h"
+
 
 #include <math.h>
 
@@ -180,8 +182,8 @@ sensor_msgs::MagneticField mag_msg;
 ros::Publisher mag_pub("magnetic_field", &mag_msg);
 
 // IR sensor
-sensor_msgs::Ir ir_msg;
-ros::Publisher pub_ir( "/ir", &ir_msg);
+turtlebot3_msgs::VersionInfo Ir;
+ros::Publisher pub_ir( "/ir", &Ir);
 
 /*******************************************************************************
 * Transform Broadcaster
