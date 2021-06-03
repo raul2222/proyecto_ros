@@ -7,7 +7,7 @@ const byte numChars = 32;
 char receivedChars[numChars];
 /////
 boolean newData = false;
-
+uint8_t imagen_salida[768];
 const byte MLX90640_address = 0x33; //Default 7-bit unshifted address of the MLX90640
 
 #define TA_SHIFT 8 //Default shift for MLX90640 in open air
@@ -15,7 +15,7 @@ float mlx90640To[768];
 paramsMLX90640 mlx90640;
 
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(19200);
     Serial.println("<Arduino is ready>");
     Serial2.begin(19200);
     Wire.begin();
@@ -57,6 +57,7 @@ void loop() {
     
 }
 
+
 int getImage(){
   
   long startTime = millis();
@@ -79,6 +80,7 @@ int getImage(){
   {
     if(x % 32 == 0) Serial.println();
     int value = abs(mlx90640To[x]);
+    imagen_salida[x]=value;
     Serial.print(value);
     Serial.print(",");
   }
