@@ -7,6 +7,7 @@ const byte numChars = 32;
 char receivedChars[numChars];
 /////
 boolean newData = false;
+boolean SendFrame = false;
 uint8_t imagen_salida[768];
 const byte MLX90640_address = 0x33; //Default 7-bit unshifted address of the MLX90640
 
@@ -17,7 +18,7 @@ paramsMLX90640 mlx90640;
 void setup() {
     Serial.begin(19200);
     Serial.println("<Arduino is ready>");
-    Serial2.begin(19200);
+    Serial2.begin(57600);
     Wire.begin();
     Wire.setClock(400000); //Increase I2C clock speed to 400kHz
 
@@ -50,10 +51,13 @@ void loop() {
     recvWithStartEndMarkers();
     showNewData();
     Serial.println("loop");
-    getImage();
-    delay(500);
+    if(newData == True && SendFrame == True){
+      getImage();
+      SendFrame == False;
+    }
+    delay(10);
     
-    Serial2.println("<{1,2}>");
+    //Serial2.println("<{1,2}>");
     
 }
 
@@ -76,7 +80,7 @@ int getImage(){
   }
   long stopTime = millis();
 
-  for (int x = 0 ; x < 768 ; x++)
+  for (int x = 0 ; x < 767 ; x++)
   {
     if(x % 32 == 0) Serial.println();
     int value = abs(mlx90640To[x]);
@@ -84,6 +88,9 @@ int getImage(){
     Serial.print(value);
     Serial.print(",");
   }
+  int value = abs(mlx90640To[768]);
+  imagen_salida[768]=value;
+  Serial.print(value);
   Serial.println("");   
 }
 
@@ -134,6 +141,9 @@ void showNewData() {
     if (newData == true) {
         //Serial.print("This just in ... ");
         Serial.println(receivedChars);
+        if (receivedChars == "<IR>"){
+          SendFrame = true;
+        }
         newData = false;
     }
 }
