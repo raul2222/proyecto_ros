@@ -6,7 +6,7 @@ boolean newData = false;
 int num = 0;
 
 void setup() {
-    Serial.begin(19200);
+    Serial.begin(57600);
     delay(5000);
     Serial.println("<Arduino is ready>");
     Serial2.begin(57600);delay(500);
@@ -24,8 +24,11 @@ void loop() {
 void getImage(){ 
     num++;
     Serial.println("peticion de frame ");
-    Serial.print(num);
+    Serial.println(num);
     Serial2.write("<IR>");
+    delay(10);
+    recvWithStartEndMarkers();
+    showNewData();
 }
 
 void recvWithStartEndMarkers() {
@@ -34,10 +37,12 @@ void recvWithStartEndMarkers() {
     char startMarker = '<';
     char endMarker = '>';
     char rc;
- 
+    //Serial.println("entra ");
     while (Serial2.available() > 0 && newData == false) {
         rc = Serial2.read();
+        Serial.print(rc);
 
+        /*
         if (recvInProgress == true) {
             if (rc != endMarker) {
                 receivedChars[ndx] = rc;
@@ -55,9 +60,12 @@ void recvWithStartEndMarkers() {
         }
 
         else if (rc == startMarker) {
+          Serial.println("recibiendo ");
             recvInProgress = true;
         }
+        */
     }
+    
 }
 
 void showNewData() {

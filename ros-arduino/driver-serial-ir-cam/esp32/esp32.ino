@@ -1,4 +1,7 @@
 #include <Wire.h>
+#include <esp_task_wdt.h>
+//3 seconds WDT
+#define WDT_TIMEOUT 3
 
 #include "MLX90640_API.h"
 #include "MLX90640_I2C_Driver.h"
@@ -14,11 +17,16 @@ const byte MLX90640_address = 0x33; //Default 7-bit unshifted address of the MLX
 #define TA_SHIFT 8 //Default shift for MLX90640 in open air
 float mlx90640To[768];
 paramsMLX90640 mlx90640;
+int i = 0;
+int last = millis();
 
 void setup() {
-    Serial.begin(57600);
-    Serial2.begin(57600);
-    delay(5000);
+    Serial.begin(9600);
+    Serial2.begin(56700);
+    delay(1000);
+    Serial.println("Configuring WDT...");
+    esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
+    esp_task_wdt_add(NULL); //add current thread to WDT watch
     Serial.println("<Arduino is ready>");
     Wire.begin();
     Wire.setClock(400000); //Increase I2C clock speed to 400kHz
@@ -45,10 +53,26 @@ void setup() {
     MLX90640_SetRefreshRate(MLX90640_address, 0x02); //Set rate to 2Hz
   //MLX90640_SetRefreshRate(MLX90640_address, 0x03); //Set rate to 4Hz
   //MLX90640_SetRefreshRate(MLX90640_address, 0x07); //Set rate to 64Hz
-    
+
+    esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
+    esp_task_wdt_add(NULL); //add current thread to WDT watch
+
+    Serial.println("fin setup");
 }
 
 void loop() {
+    /*
+    if (millis() - last >= 2000 && i < 5) {
+        Serial.println("Resetting WDT...");
+        esp_task_wdt_reset();
+        last = millis();
+        i++;
+        if (i == 5) {
+          Serial.println("Stopping WDT reset. CPU should reboot in 3s");
+        }
+    }*/
+    esp_task_wdt_reset();
+
     recvWithStartEndMarkers();
     showNewData();
     //Serial.println("loop");
@@ -116,9 +140,9 @@ int getImage(){
 
   }
 
-  for (int x = 0 ; x < 768 ; x++){
-    mlx90640To[x] = 0;
-  }
+  //for (int x = 0 ; x < 768 ; x++){
+  //  mlx90640To[x] = 0;
+  //}
   Serial.println("");   
   SendFrame = false;
   return status;
