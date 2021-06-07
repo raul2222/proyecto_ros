@@ -16,7 +16,7 @@ float mlx90640To[768];
 paramsMLX90640 mlx90640;
 
 void setup() {
-    Serial.begin(19200);
+    Serial.begin(57600);
     Serial2.begin(57600);
     delay(5000);
     Serial.println("<Arduino is ready>");
@@ -85,20 +85,31 @@ int getImage(){
     MLX90640_CalculateTo(mlx90640Frame, &mlx90640, emissivity, tr, mlx90640To);
   }
   long stopTime = millis();
-
-  for (int x = 0 ; x < 767 ; x++)
+  boolean validFrame = true;
+  for (int x = 0 ; x < 768 ; x++)
   {
     if(x % 32 == 0) Serial.println();
     int value = abs(mlx90640To[x]);
     imagen_salida[x]=value;
+    if (value < 0 || value > 200){
+      validFrame = false;
+    }
     Serial.print(value);
     Serial.print(",");
   }
-  int value = abs(mlx90640To[768]);
-  imagen_salida[768]=value;
-  Serial.print(value);
-  Serial.println("");   
+
+  if (validFrame == true){
+    Serial2.print("<{");
+    for (int x = 0 ; x < 768 ; x++){
+      Serial2.print(imagen_salida[x]);
+      Serial2.print(",");
+    }
+    Serial2.print("}>");
+  }
+
   
+  Serial.println("");   
+  SendFrame = false;
   return status;
 }
 
@@ -152,8 +163,10 @@ void showNewData() {
         if (StrContains(receivedChars, "IR") > 0){
           Serial.println("entra");
           SendFrame = true;
+        } else {
+          newData = false;
+          SendFrame = false;
         }
-        newData = false;
     }
 }
 

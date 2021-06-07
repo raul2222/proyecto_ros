@@ -3,10 +3,11 @@ const byte numChars = 1000;
 char receivedChars[numChars];
 
 boolean newData = false;
+int num = 0;
 
 void setup() {
-    Serial.begin(115200);
-    delay(2000);
+    Serial.begin(19200);
+    delay(5000);
     Serial.println("<Arduino is ready>");
     Serial2.begin(57600);delay(500);
 }
@@ -20,8 +21,11 @@ void loop() {
     showNewData();
 }
 
-void getImage(){
-  Serial2.write("<IR>");
+void getImage(){ 
+    num++;
+    Serial.println("peticion de frame ");
+    Serial.print(num);
+    Serial2.write("<IR>");
 }
 
 void recvWithStartEndMarkers() {
