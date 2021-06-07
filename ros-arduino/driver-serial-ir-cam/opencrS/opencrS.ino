@@ -42,7 +42,7 @@ void setup()
   nh.advertise(joint_states_pub);
   nh.advertise(battery_state_pub);
   nh.advertise(mag_pub);
-  nh.advertise(pub_ir);  //creacion de nodo para transmitir la imagen térmica
+  nh.advertise(pub_ir);  //publicar en /pub_ir para transmitir la imagen térmica
 
   tf_broadcaster.init(nh);
 

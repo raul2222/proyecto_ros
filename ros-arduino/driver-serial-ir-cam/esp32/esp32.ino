@@ -7,6 +7,7 @@ const byte numChars = 32;
 char receivedChars[numChars];
 /////
 boolean newData = false;
+boolean SendFrame = false;
 uint8_t imagen_salida[768];
 const byte MLX90640_address = 0x33; //Default 7-bit unshifted address of the MLX90640
 
@@ -16,8 +17,9 @@ paramsMLX90640 mlx90640;
 
 void setup() {
     Serial.begin(19200);
+    Serial2.begin(57600);
+    delay(2000);
     Serial.println("<Arduino is ready>");
-    Serial2.begin(19200);
     Wire.begin();
     Wire.setClock(400000); //Increase I2C clock speed to 400kHz
 
@@ -49,11 +51,14 @@ void setup() {
 void loop() {
     recvWithStartEndMarkers();
     showNewData();
-    Serial.println("loop");
-    getImage();
-    delay(500);
+    //Serial.println("loop");
+    if(newData == true && SendFrame == true){
+      getImage();
+      SendFrame == false;
+    }
+    delay(10);
     
-    Serial2.println("<{1,2}>");
+    //Serial2.println("<{1,2}>");
     
 }
 
@@ -61,10 +66,11 @@ void loop() {
 int getImage(){
   
   long startTime = millis();
+  int status = 0;
   for (byte x = 0 ; x < 2 ; x++)
   {
     uint16_t mlx90640Frame[834];
-    int status = MLX90640_GetFrameData(MLX90640_address, mlx90640Frame);
+    status = MLX90640_GetFrameData(MLX90640_address, mlx90640Frame);
 
     float vdd = MLX90640_GetVdd(mlx90640Frame, &mlx90640);
     float Ta = MLX90640_GetTa(mlx90640Frame, &mlx90640);
@@ -76,7 +82,7 @@ int getImage(){
   }
   long stopTime = millis();
 
-  for (int x = 0 ; x < 768 ; x++)
+  for (int x = 0 ; x < 767 ; x++)
   {
     if(x % 32 == 0) Serial.println();
     int value = abs(mlx90640To[x]);
@@ -84,7 +90,11 @@ int getImage(){
     Serial.print(value);
     Serial.print(",");
   }
+  int value = abs(mlx90640To[768]);
+  imagen_salida[768]=value;
+  Serial.print(value);
   Serial.println("");   
+  return status;
 }
 
 
@@ -134,6 +144,9 @@ void showNewData() {
     if (newData == true) {
         //Serial.print("This just in ... ");
         Serial.println(receivedChars);
+        if (receivedChars == "<IR>"){
+          SendFrame = true;
+        }
         newData = false;
     }
 }
