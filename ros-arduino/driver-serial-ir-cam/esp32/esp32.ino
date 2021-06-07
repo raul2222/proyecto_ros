@@ -86,28 +86,39 @@ int getImage(){
   }
   long stopTime = millis();
   boolean validFrame = true;
+
+
   for (int x = 0 ; x < 768 ; x++)
   {
     if(x % 32 == 0) Serial.println();
     int value = abs(mlx90640To[x]);
     imagen_salida[x]=value;
-    if (value < 0 || value > 200){
+    if (value > 200){
       validFrame = false;
     }
     Serial.print(value);
     Serial.print(",");
+
   }
 
   if (validFrame == true){
+    Serial.println("envia a open cr ");
     Serial2.print("<{");
     for (int x = 0 ; x < 768 ; x++){
-      Serial2.print(imagen_salida[x]);
+      if(x % 32 == 0) Serial2.println();
+      int value = abs(mlx90640To[x]);
+      Serial2.print(value);
+
       Serial2.print(",");
     }
     Serial2.print("}>");
+    Serial2.println();
+
   }
 
-  
+  for (int x = 0 ; x < 768 ; x++){
+    mlx90640To[x] = 0;
+  }
   Serial.println("");   
   SendFrame = false;
   return status;
