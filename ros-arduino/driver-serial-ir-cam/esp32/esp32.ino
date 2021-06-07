@@ -17,8 +17,9 @@ paramsMLX90640 mlx90640;
 
 void setup() {
     Serial.begin(19200);
-    Serial.println("<Arduino is ready>");
     Serial2.begin(57600);
+    delay(2000);
+    Serial.println("<Arduino is ready>");
     Wire.begin();
     Wire.setClock(400000); //Increase I2C clock speed to 400kHz
 
@@ -50,10 +51,10 @@ void setup() {
 void loop() {
     recvWithStartEndMarkers();
     showNewData();
-    Serial.println("loop");
-    if(newData == True && SendFrame == True){
+    //Serial.println("loop");
+    if(newData == true && SendFrame == true){
       getImage();
-      SendFrame == False;
+      SendFrame == false;
     }
     delay(10);
     
@@ -65,10 +66,11 @@ void loop() {
 int getImage(){
   
   long startTime = millis();
+  int status = 0;
   for (byte x = 0 ; x < 2 ; x++)
   {
     uint16_t mlx90640Frame[834];
-    int status = MLX90640_GetFrameData(MLX90640_address, mlx90640Frame);
+    status = MLX90640_GetFrameData(MLX90640_address, mlx90640Frame);
 
     float vdd = MLX90640_GetVdd(mlx90640Frame, &mlx90640);
     float Ta = MLX90640_GetTa(mlx90640Frame, &mlx90640);
@@ -92,6 +94,7 @@ int getImage(){
   imagen_salida[768]=value;
   Serial.print(value);
   Serial.println("");   
+  return status;
 }
 
 
