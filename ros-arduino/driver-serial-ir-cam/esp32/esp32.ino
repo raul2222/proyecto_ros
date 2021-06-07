@@ -18,7 +18,7 @@ paramsMLX90640 mlx90640;
 void setup() {
     Serial.begin(19200);
     Serial2.begin(57600);
-    delay(2000);
+    delay(5000);
     Serial.println("<Arduino is ready>");
     Wire.begin();
     Wire.setClock(400000); //Increase I2C clock speed to 400kHz
@@ -52,10 +52,14 @@ void loop() {
     recvWithStartEndMarkers();
     showNewData();
     //Serial.println("loop");
-    if(newData == true && SendFrame == true){
-      getImage();
-      SendFrame == false;
+
+    if(SendFrame == true){
+        Serial.println("loop2");
+        getImage();
+        SendFrame == false;
+        newData = false;
     }
+    
     delay(10);
     
     //Serial2.println("<{1,2}>");
@@ -94,6 +98,7 @@ int getImage(){
   imagen_salida[768]=value;
   Serial.print(value);
   Serial.println("");   
+  
   return status;
 }
 
@@ -115,8 +120,8 @@ void recvWithStartEndMarkers() {
     char endMarker = '>';
     char rc;
  
-    while (Serial1.available() > 0 && newData == false) {
-        rc = Serial1.read();
+    while (Serial2.available() > 0 && newData == false) {
+        rc = Serial2.read();
 
         if (recvInProgress == true) {
             if (rc != endMarker) {
@@ -144,9 +149,40 @@ void showNewData() {
     if (newData == true) {
         //Serial.print("This just in ... ");
         Serial.println(receivedChars);
-        if (receivedChars == "<IR>"){
+        if (StrContains(receivedChars, "IR") > 0){
+          Serial.println("entra");
           SendFrame = true;
         }
         newData = false;
     }
+}
+
+// searches for the string sfind in the string str
+// returns 1 if string found
+// returns 0 if string not found
+char StrContains(char *str, char *sfind)
+{
+    char found = 0;
+    char index = 0;
+    char len;
+
+    len = strlen(str);
+    
+    if (strlen(sfind) > len) {
+        return 0;
+    }
+    while (index < len) {
+        if (str[index] == sfind[found]) {
+            found++;
+            if (strlen(sfind) == found) {
+                return 1;
+            }
+        }
+        else {
+            found = 0;
+        }
+        index++;
+    }
+
+    return 0;
 }
