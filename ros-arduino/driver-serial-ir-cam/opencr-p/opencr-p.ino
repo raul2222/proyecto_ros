@@ -1,31 +1,42 @@
 
-const byte numChars = 1000;
+const byte numChars = 3000;
 char receivedChars[numChars];
 
 boolean newData = false;
+int num = 0;
+boolean recvInProgress = false;
 
 void setup() {
     Serial.begin(115200);
     delay(2000);
     Serial.println("<Arduino is ready>");
-    Serial2.begin(57600);delay(500);
+    Serial2.begin(115200);delay(500);
 }
 
 void loop() {
     delay(7000);
     Serial.println("esto es loop");
-    getImage();
+    getImageFromOpenCR();
     delay(50);  
-    recvWithStartEndMarkers();
-    showNewData();
+    
+  
 }
 
-void getImage(){
-  Serial2.write("<IR>");
+void getImageFromOpenCR(){ 
+    num++;
+    
+    if(recvInProgress == false) {
+      Serial.println("peticion de frame ");
+      Serial.println(num);
+      Serial2.write("<IR>");
+      delay(10);
+      recvWithStartEndMarkers();
+      showNewData();
+    }
 }
 
 void recvWithStartEndMarkers() {
-    static boolean recvInProgress = false;
+    int enter = millis();
     static byte ndx = 0;
     char startMarker = '<';
     char endMarker = '>';
@@ -53,13 +64,17 @@ void recvWithStartEndMarkers() {
         else if (rc == startMarker) {
             recvInProgress = true;
         }
+        // cancelo la accion si tarda mas de 1 segundo
+        //if(millis() > (enter + 1000)){
+        //  newData = true;
+        //}
     }
 }
 
 void showNewData() {
     if (newData == true) {
-        Serial.println("This just in ... ");
-        Serial.println(receivedChars);
-        newData = false;
+          Serial.println("This just in ... ");
+          Serial.println(receivedChars);
+          newData = false;
     }
 }
