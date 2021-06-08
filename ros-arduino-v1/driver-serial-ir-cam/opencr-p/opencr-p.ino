@@ -37,12 +37,10 @@ void recvWithStartEndMarkers() {
     char startMarker = '<';
     char endMarker = '>';
     char rc;
-    //Serial.println("entra ");
+ 
     while (Serial2.available() > 0 && newData == false) {
         rc = Serial2.read();
-        Serial.print(rc);
 
-        /*
         if (recvInProgress == true) {
             if (rc != endMarker) {
                 receivedChars[ndx] = rc;
@@ -60,12 +58,9 @@ void recvWithStartEndMarkers() {
         }
 
         else if (rc == startMarker) {
-          Serial.println("recibiendo ");
             recvInProgress = true;
         }
-        */
     }
-    
 }
 
 void showNewData() {

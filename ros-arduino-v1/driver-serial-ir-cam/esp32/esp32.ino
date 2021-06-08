@@ -1,10 +1,10 @@
 #include <Wire.h>
 #include <esp_task_wdt.h>
-//3 seconds WDT
+//7 seconds WDT
 #define WDT_TIMEOUT 7
-
 #include "MLX90640_API.h"
 #include "MLX90640_I2C_Driver.h"
+#define DEBUG 1 
 
 const byte numChars = 32;
 char receivedChars[numChars];
@@ -17,9 +17,11 @@ const byte MLX90640_address = 0x33; //Default 7-bit unshifted address of the MLX
 #define TA_SHIFT 8 //Default shift for MLX90640 in open air
 float mlx90640To[768];
 paramsMLX90640 mlx90640;
+
 String Frame = "";
 int i = 0;
 int last = millis();
+int mycount = 0;
 
 void setup() {
     Serial.begin(115200);
@@ -86,15 +88,26 @@ void loop() {
         newData = false;
     }
     
-    delay(10);
+    delay(500);
+    mycount++;
+    if (mycount > 20 ){
+      getImage();  
 
-    getImage();
-    delay(2500);
+      mycount = 0;
+    }
+
+    
+
+
+#ifdef DEBUG
+    //Serial.println("loop1");
+#endif
+
 }
 
 
 int getImage(){
-  
+  Serial.println("Image ");
   long startTime = millis();
   int status = 0;
   for (byte x = 0 ; x < 2 ; x++)
@@ -116,36 +129,28 @@ int getImage(){
 
   for (int x = 0 ; x < 768 ; x++)
   {
-    if(x % 32 == 0) Serial.println();
-    if(isnan(mlx90640To[x]) || mlx90640To[x]>300){
+    if(x % 32 == 0) 
+    if(isnan(mlx90640To[x])){
       validFrame = false;
     }
-    Serial.print(mlx90640To[x]);
-    Serial.print(","); 
+    //Serial.print(mlx90640To[x]);
+    Frame = Frame + mlx90640To[x] + ",";
+    //Serial.print(","); 
   }
-
   if(validFrame == false){
+    Serial.println("invalid");
     delay (7000);
   }
-/*
-  if (validFrame == true){
-    Serial.println("envia a open cr ");
-    Serial2.print("<{");
-    for (int x = 0 ; x < 768 ; x++){
-      if(x % 32 == 0) Serial2.println();
-      Serial2.print(mlx90640To[x], 2);
 
-      Serial2.print(",");
-    }
-    Serial2.print("}>");
-    Serial2.println();
 
+  
+  if(SendFrame == true) {
+    Frame.remove(769);
+    Frame = Frame + "}>";
+    Serial.println(Frame);
+    Serial2.println(Frame);
   }
-*/
-  //for (int x = 0 ; x < 768 ; x++){
-  //  mlx90640To[x] = 0;
-  //}
-  Serial.println("");   
+
   SendFrame = false;
   return status;
 }
