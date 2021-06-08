@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <esp_task_wdt.h>
 //3 seconds WDT
-#define WDT_TIMEOUT 3
+#define WDT_TIMEOUT 7
 
 #include "MLX90640_API.h"
 #include "MLX90640_I2C_Driver.h"
@@ -17,12 +17,13 @@ const byte MLX90640_address = 0x33; //Default 7-bit unshifted address of the MLX
 #define TA_SHIFT 8 //Default shift for MLX90640 in open air
 float mlx90640To[768];
 paramsMLX90640 mlx90640;
+String Frame = "";
 int i = 0;
 int last = millis();
 
 void setup() {
-    Serial.begin(9600);
-    Serial2.begin(56700);
+    Serial.begin(115200);
+    Serial2.begin(115200);
     delay(1000);
     Serial.println("Configuring WDT...");
     esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
@@ -49,14 +50,14 @@ void setup() {
       Serial.println("Parameter extraction failed");
 
     //Once params are extracted, we can release eeMLX90640 array
-
-    MLX90640_SetRefreshRate(MLX90640_address, 0x02); //Set rate to 2Hz
+    MLX90640_I2CWrite(0x33, 0x800D, 6401);// Schreibt den Wert 1901 (HEX) = 6401 (DEC) ins Register an die Stelle 0x800D, damit der Sensor ausgelesen werden kann!!!
+    MLX90640_SetRefreshRate(MLX90640_address, 0x04); //Set rate to 2Hz
   //MLX90640_SetRefreshRate(MLX90640_address, 0x03); //Set rate to 4Hz
   //MLX90640_SetRefreshRate(MLX90640_address, 0x07); //Set rate to 64Hz
 
     esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
     esp_task_wdt_add(NULL); //add current thread to WDT watch
-
+    delay(100);
     Serial.println("fin setup");
 }
 
@@ -71,6 +72,7 @@ void loop() {
           Serial.println("Stopping WDT reset. CPU should reboot in 3s");
         }
     }*/
+    //whtchdog esp32
     esp_task_wdt_reset();
 
     recvWithStartEndMarkers();
@@ -85,9 +87,9 @@ void loop() {
     }
     
     delay(10);
-    
-    //Serial2.println("<{1,2}>");
-    
+
+    getImage();
+    delay(2500);
 }
 
 
@@ -110,28 +112,28 @@ int getImage(){
   }
   long stopTime = millis();
   boolean validFrame = true;
-
+  Frame = "<{";
 
   for (int x = 0 ; x < 768 ; x++)
   {
     if(x % 32 == 0) Serial.println();
-    int value = abs(mlx90640To[x]);
-    imagen_salida[x]=value;
-    if (value > 200){
+    if(isnan(mlx90640To[x]) || mlx90640To[x]>300){
       validFrame = false;
     }
-    Serial.print(value);
-    Serial.print(",");
-
+    Serial.print(mlx90640To[x]);
+    Serial.print(","); 
   }
 
+  if(validFrame == false){
+    delay (7000);
+  }
+/*
   if (validFrame == true){
     Serial.println("envia a open cr ");
     Serial2.print("<{");
     for (int x = 0 ; x < 768 ; x++){
       if(x % 32 == 0) Serial2.println();
-      int value = abs(mlx90640To[x]);
-      Serial2.print(value);
+      Serial2.print(mlx90640To[x], 2);
 
       Serial2.print(",");
     }
@@ -139,7 +141,7 @@ int getImage(){
     Serial2.println();
 
   }
-
+*/
   //for (int x = 0 ; x < 768 ; x++){
   //  mlx90640To[x] = 0;
   //}
