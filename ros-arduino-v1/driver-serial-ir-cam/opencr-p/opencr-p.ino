@@ -6,10 +6,10 @@ boolean newData = false;
 int num = 0;
 
 void setup() {
-    Serial.begin(57600);
-    delay(5000);
+    Serial.begin(115200);
+    delay(2000);
     Serial.println("<Arduino is ready>");
-    Serial2.begin(57600);delay(500);
+    Serial2.begin(115200);delay(500);
 }
 
 void loop() {
