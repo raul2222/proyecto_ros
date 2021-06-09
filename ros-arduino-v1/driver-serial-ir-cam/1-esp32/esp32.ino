@@ -91,7 +91,7 @@ void loop() {
     delay(500);
     mycount++;
     if (mycount > 20 ){
-      getImage();  
+      //getImage();  
 
       mycount = 0;
     }
@@ -146,9 +146,13 @@ int getImage(){
   
   if(SendFrame == true) {
     Frame.remove(769);
-    Frame = Frame + "}>";
-    Serial.println(Frame);
-    Serial2.println(Frame);
+    Frame = Frame + "}>*";
+
+
+    Serial2.print(Frame);
+    Serial.print(Frame.substring(0,386));
+    Serial.println(Frame.substring(386,772));
+
   }
 
   SendFrame = false;
