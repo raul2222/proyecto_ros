@@ -10,9 +10,10 @@ class Ros2OpenCVImageConverter():
     def __init__(self):
     
         self.bridge_object = CvBridge()
+        #/raspicam_node/image para real
         self.image_sub = rospy.Subscriber("/turtlebot3/camera/image_raw",Image,self.camera_callback)
-        self.face_cascade = cv2.CascadeClassifier('/home/raul/catkin_ws/src/image_capture/src/haarcascade_frontalface_default.xml')
-        self.body_cascade = cv2.CascadeClassifier('/home/raul/catkin_ws/src/image_capture/src/haarcascade_fullbody.xml')
+        self.face_cascade = cv2.CascadeClassifier('/home/raul/catkin_ws/src/image_capture/src/clasificadores/haarcascade_frontalface_default.xml')
+        self.body_cascade = cv2.CascadeClassifier('/home/raul/catkin_ws/src/image_capture/src/clasificadores/haarcascade_fullbody.xml')
         self.n = 0
 
     def camera_callback(self,data):
@@ -25,25 +26,20 @@ class Ros2OpenCVImageConverter():
         img_gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
         
         
-        if self.face_cascade.empty():
-            print('ay mecachis')
-            
-            
-        
         try:
-            detections = self.body_cascade.detectMultiScale(img_gray, 1.1, 1)
+            detections = self.face_cascade.detectMultiScale(img_gray, 1.1, 1)
             for (x,y,w,h) in detections:
                 self.n += 1
    
                 cv2.rectangle(cv_image,(x,y),(x+w,y+h),(255,0,0),2)
     
                 roi_color = cv_image[y:y+h, x:x+w]
-   
-                cv2.imwrite('face'+str(self.n)+'.jpg', roi_color)
+                #descomentar para guardar la deteccion
+                #cv2.imwrite('face'+str(self.n)+'.jpg', roi_color)
                 print(str(self.n))
 
         except:
-            print('oops')
+            print('No detections')
         
         
         cv2.imshow("Imagen capturada por el robot", cv_image)
