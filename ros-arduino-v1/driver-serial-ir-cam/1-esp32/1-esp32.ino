@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <esp_task_wdt.h>
 //7 seconds WDT
-#define WDT_TIMEOUT 7
+#define WDT_TIMEOUT 8
 #include "MLX90640_API.h"
 #include "MLX90640_I2C_Driver.h"
 #define DEBUG 1 
@@ -64,22 +64,11 @@ void setup() {
 }
 
 void loop() {
-    /*
-    if (millis() - last >= 2000 && i < 5) {
-        Serial.println("Resetting WDT...");
-        esp_task_wdt_reset();
-        last = millis();
-        i++;
-        if (i == 5) {
-          Serial.println("Stopping WDT reset. CPU should reboot in 3s");
-        }
-    }*/
     //whtchdog esp32
     esp_task_wdt_reset();
 
     recvWithStartEndMarkers();
     showNewData();
-    //Serial.println("loop");
 
     if(SendFrame == true){
         Serial.println("loop2");
@@ -88,16 +77,7 @@ void loop() {
         newData = false;
     }
     
-    delay(500);
-    mycount++;
-    if (mycount > 20 ){
-      //getImage();  
-
-      mycount = 0;
-    }
-
-    
-
+    delay(1);
 
 #ifdef DEBUG
     //Serial.println("loop1");
@@ -142,12 +122,9 @@ int getImage(){
     delay (7000);
   }
 
-
-  
   if(SendFrame == true) {
     Frame.remove(769);
-    Frame = Frame + "}>*";
-
+    Frame = Frame + "}>";
 
     Serial2.print(Frame);
     Serial.print(Frame.substring(0,386));
