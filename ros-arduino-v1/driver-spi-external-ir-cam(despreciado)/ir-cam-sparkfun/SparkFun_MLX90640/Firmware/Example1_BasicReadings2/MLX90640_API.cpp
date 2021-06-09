@@ -14,9 +14,11 @@
  * limitations under the License.
  *
  */
-#include "MLX90640_I2C_Driver.h"
-#include "MLX90640_API.h"
+//#include <MLX90640_I2C_Driver.h>
+#include <MLX90640_API.h>
 #include <math.h>
+#include <stdio.h>
+#include <chrono>
 
 void ExtractVDDParameters(uint16_t *eeData, paramsMLX90640 *mlx90640);
 void ExtractPTATParameters(uint16_t *eeData, paramsMLX90640 *mlx90640);
@@ -34,11 +36,85 @@ void ExtractCILCParameters(uint16_t *eeData, paramsMLX90640 *mlx90640);
 int ExtractDeviatingPixels(uint16_t *eeData, paramsMLX90640 *mlx90640);
 int CheckAdjacentPixels(uint16_t pix1, uint16_t pix2);
 int CheckEEPROMValid(uint16_t *eeData);  
+float GetMedian(float *values, int n);
+int IsPixelBad(uint16_t pixel,paramsMLX90640 *params);
 
   
 int MLX90640_DumpEE(uint8_t slaveAddr, uint16_t *eeData)
 {
      return MLX90640_I2CRead(slaveAddr, 0x2400, 832, eeData);
+}
+
+int MLX90640_CheckInterrupt(uint8_t slaveAddr)
+{
+    uint16_t statusRegister;
+    MLX90640_I2CRead(slaveAddr, 0x8000, 1, &statusRegister);
+    return (statusRegister & 0b1000) > 0;
+}
+
+void MLX90640_StartMeasurement(uint8_t slaveAddr, uint8_t subPage)
+{
+    uint16_t controlRegister1;
+    uint16_t statusRegister;
+    MLX90640_I2CRead(slaveAddr, 0x800D, 1, &controlRegister1);
+    controlRegister1 &= 0b1111111111101111;
+    controlRegister1 |= subPage << 4;
+    MLX90640_I2CWrite(slaveAddr, 0x800D, controlRegister1);
+    MLX90640_I2CRead(slaveAddr, 0x8000, 1, &statusRegister);
+    statusRegister &= 0b1111111111110111; // Clear b3: new data available in RAM
+    statusRegister |= 0b0000000000110000; // Set b5: start of measurement
+                                          // Set b4: enable RAM overwrite
+    MLX90640_I2CWrite(slaveAddr, 0x8000, statusRegister);
+}
+
+int MLX90640_GetData(uint8_t slaveAddr, uint16_t *frameData)
+{
+    int error = 0;
+    uint16_t statusRegister;
+    uint16_t controlRegister1;
+
+    // Get page data
+    error = MLX90640_I2CRead(slaveAddr, 0x0400, 832, frameData);
+    
+    // Get status reguster
+    MLX90640_I2CRead(slaveAddr, 0x8000, 1, &statusRegister);
+
+    // Get control register
+    MLX90640_I2CRead(slaveAddr, 0x800D, 1, &controlRegister1);
+    
+    frameData[832] = controlRegister1;
+    frameData[833] = statusRegister & 0x0001; // Populate the subpage number 
+}
+
+int MLX90640_InterpolateOutliers(uint16_t *frameData, uint16_t *eepromData)
+{
+    for(int x = 0; x < 768; x++){
+        int broken = eepromData[64 + x] == 0;
+        int outlier = eepromData[64 + x] & 0x0001;
+        if (broken){
+            float val = 0;
+            int count = 0;
+            if(x - 33 > 0){
+                val += frameData[x - 33];
+                val += frameData[x - 31];
+                count += 2;
+            } else if (x - 31 > 0){
+                val += frameData[x - 31];
+                count += 1;
+            }
+            if(x + 33 < 768){
+                val += frameData[x + 33];
+                val += frameData[x + 31];
+                count += 2;
+            } else if (x + 31 < 768){
+                val += frameData[x + 31];
+                count += 1;
+            }
+            frameData[x] = (uint16_t)((float)(val / count) * 1.0003);
+        }
+    }
+
+    return 0;
 }
 
 int MLX90640_GetFrameData(uint8_t slaveAddr, uint16_t *frameData)
@@ -48,7 +124,8 @@ int MLX90640_GetFrameData(uint8_t slaveAddr, uint16_t *frameData)
     uint16_t statusRegister;
     int error = 1;
     uint8_t cnt = 0;
-    
+
+    auto t_start = std::chrono::system_clock::now();
     dataReady = 0;
     while(dataReady == 0)
     {
@@ -58,40 +135,49 @@ int MLX90640_GetFrameData(uint8_t slaveAddr, uint16_t *frameData)
             return error;
         }    
         dataReady = statusRegister & 0x0008;
-    }       
-        
+
+	auto t_end = std::chrono::system_clock::now();
+	auto t_elapsed = std::chrono::duration_cast<std::chrono::seconds>(t_end - t_start);
+	if (t_elapsed.count() > 5) {
+		printf("frameData timeout error waiting for dataReady \n");
+		return -1;
+	}
+    } 
+
     while(dataReady != 0 && cnt < 5)
-    { 
+    {
         error = MLX90640_I2CWrite(slaveAddr, 0x8000, 0x0030);
         if(error == -1)
         {
             return error;
         }
-            
+
         error = MLX90640_I2CRead(slaveAddr, 0x0400, 832, frameData); 
         if(error != 0)
         {
+            printf("frameData read error \n");
             return error;
         }
-                   
+
         error = MLX90640_I2CRead(slaveAddr, 0x8000, 1, &statusRegister);
         if(error != 0)
         {
             return error;
-        }    
+        }
         dataReady = statusRegister & 0x0008;
         cnt = cnt + 1;
     }
-    
+
     if(cnt > 4)
     {
-        return -8;
-    }    
-    
+        fprintf(stderr, "cnt > 4 error \n");
+        // return -8;
+    }
+    //printf("count: %d \n", cnt); 
     error = MLX90640_I2CRead(slaveAddr, 0x800D, 1, &controlRegister1);
     frameData[832] = controlRegister1;
     frameData[833] = statusRegister & 0x0001;
-    
+
     if(error != 0)
     {
         return error;
@@ -257,6 +343,66 @@ int MLX90640_GetCurMode(uint8_t slaveAddr)
     modeRAM = (controlRegister1 & 0x1000) >> 12;
     
     return modeRAM; 
+}
+
+//------------------------------------------------------------------------------
+
+int MLX90640_SetDeviceMode(uint8_t slaveAddr, uint8_t deviceMode)
+{
+    uint16_t controlRegister1;
+    int value;
+    int error;
+    
+    value = (deviceMode & 0x01)<<4;
+    
+    error = MLX90640_I2CRead(slaveAddr, 0x800D, 1, &controlRegister1);
+    if(error == 0)
+    {
+        value = (controlRegister1 & 0b1111111111111101) | value;
+        error = MLX90640_I2CWrite(slaveAddr, 0x800D, value);
+    }    
+    
+    return error;
+}
+
+//------------------------------------------------------------------------------
+
+int MLX90640_SetSubPageRepeat(uint8_t slaveAddr, uint8_t subPageRepeat)
+{
+    uint16_t controlRegister1;
+    int value;
+    int error;
+    
+    value = (subPageRepeat & 0x01)<<3;
+    
+    error = MLX90640_I2CRead(slaveAddr, 0x800D, 1, &controlRegister1);
+    if(error == 0)
+    {
+        value = (controlRegister1 & 0b1111111111110111) | value;
+        error = MLX90640_I2CWrite(slaveAddr, 0x800D, value);
+    }    
+    
+    return error;
+}
+
+//------------------------------------------------------------------------------
+
+int MLX90640_SetSubPage(uint8_t slaveAddr, uint8_t subPage)
+{
+    uint16_t controlRegister1;
+    int value;
+    int error;
+    
+    value = (subPage & 0x01)<<4;
+    
+    error = MLX90640_I2CRead(slaveAddr, 0x800D, 1, &controlRegister1);
+    if(error == 0)
+    {
+        value = (controlRegister1 & 0b1111111110001111) | value;
+        error = MLX90640_I2CWrite(slaveAddr, 0x800D, value);
+    }    
+    
+    return error;
 }
 
 //------------------------------------------------------------------------------
@@ -545,6 +691,109 @@ int MLX90640_GetSubPageNumber(uint16_t *frameData)
     return frameData[833];    
 
 }    
+
+//------------------------------------------------------------------------------
+
+void MLX90640_BadPixelsCorrection(uint16_t *pixels, float *to, int mode, paramsMLX90640 *params)
+{   
+    float ap[4];
+    uint8_t pix;
+    uint8_t line;
+    uint8_t column;
+    
+    pix = 0;
+    while(pixels[pix]< 0xFFFF)
+    {
+        line = pixels[pix]>>5;
+        column = pixels[pix] - (line<<5);
+        
+        if(mode == 1)
+        {        
+            if(line == 0)
+            {
+                if(column == 0)
+                {        
+                    to[pixels[pix]] = to[33];                    
+                }
+                else if(column == 31)
+                {
+                    to[pixels[pix]] = to[62];                      
+                }
+                else
+                {
+                    to[pixels[pix]] = (to[pixels[pix]+31] + to[pixels[pix]+33])/2.0;                    
+                }        
+            }
+            else if(line == 23)
+            {
+                if(column == 0)
+                {
+                    to[pixels[pix]] = to[705];                    
+                }
+                else if(column == 31)
+                {
+                    to[pixels[pix]] = to[734];                       
+                }
+                else
+                {
+                    to[pixels[pix]] = (to[pixels[pix]-33] + to[pixels[pix]-31])/2.0;                       
+                }                       
+            } 
+            else if(column == 0)
+            {
+                to[pixels[pix]] = (to[pixels[pix]-31] + to[pixels[pix]+33])/2.0;                
+            }
+            else if(column == 31)
+            {
+                to[pixels[pix]] = (to[pixels[pix]-33] + to[pixels[pix]+31])/2.0;                
+            } 
+            else
+            {
+                ap[0] = to[pixels[pix]-33];
+                ap[1] = to[pixels[pix]-31];
+                ap[2] = to[pixels[pix]+31];
+                ap[3] = to[pixels[pix]+33];
+                to[pixels[pix]] = GetMedian(ap,4);
+            }                   
+        }
+        else
+        {        
+            if(column == 0)
+            {
+                to[pixels[pix]] = to[pixels[pix]+1];            
+            }
+            else if(column == 1 || column == 30)
+            {
+                to[pixels[pix]] = (to[pixels[pix]-1]+to[pixels[pix]+1])/2.0;                
+            } 
+            else if(column == 31)
+            {
+                to[pixels[pix]] = to[pixels[pix]-1];
+            } 
+            else
+            {
+                if(IsPixelBad(pixels[pix]-2,params) == 0 && IsPixelBad(pixels[pix]+2,params) == 0)
+                {
+                    ap[0] = to[pixels[pix]+1] - to[pixels[pix]+2];
+                    ap[1] = to[pixels[pix]-1] - to[pixels[pix]-2];
+                    if(fabs(ap[0]) > fabs(ap[1]))
+                    {
+                        to[pixels[pix]] = to[pixels[pix]-1] + ap[1];                        
+                    }
+                    else
+                    {
+                        to[pixels[pix]] = to[pixels[pix]+1] + ap[0];                        
+                    }
+                }
+                else
+                {
+                    to[pixels[pix]] = (to[pixels[pix]-1]+to[pixels[pix]+1])/2.0;                    
+                }            
+            }                      
+        } 
+        pix = pix + 1;    
+    }    
+}
 
 //------------------------------------------------------------------------------
 
@@ -1069,7 +1318,7 @@ int ExtractDeviatingPixels(uint16_t *eeData, paramsMLX90640 *mlx90640)
         mlx90640->brokenPixels[pixCnt] = 0xFFFF;
         mlx90640->outlierPixels[pixCnt] = 0xFFFF;
     }
-        
+ 
     pixCnt = 0;    
     while (pixCnt < 768 && brokenPixCnt < 5 && outlierPixCnt < 5)
     {
@@ -1168,7 +1417,7 @@ int ExtractDeviatingPixels(uint16_t *eeData, paramsMLX90640 *mlx90640)
      return 0;    
  }
  
- //------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
  
  int CheckEEPROMValid(uint16_t *eeData)  
  {
@@ -1180,4 +1429,50 @@ int ExtractDeviatingPixels(uint16_t *eeData, paramsMLX90640 *mlx90640)
      }
      
      return -7;    
- }        
+ } 
+
+//------------------------------------------------------------------------------
+ 
+float GetMedian(float *values, int n)
+ {
+    float temp;
+    
+    for(int i=0; i<n-1; i++)
+    {
+        for(int j=i+1; j<n; j++)
+        {
+            if(values[j] < values[i]) 
+            {                
+                temp = values[i];
+                values[i] = values[j];
+                values[j] = temp;
+            }
+        }
+    }
+    
+    if(n%2==0) 
+    {
+        return ((values[n/2] + values[n/2 - 1]) / 2.0);
+        
+    } 
+    else 
+    {
+        return values[n/2];
+    }
+    
+ }           
+
+//------------------------------------------------------------------------------
+
+int IsPixelBad(uint16_t pixel,paramsMLX90640 *params)
+{
+    for(int i=0; i<5; i++)
+    {
+        if(pixel == params->outlierPixels[i] || pixel == params->brokenPixels[i])
+        {
+            return 1;
+        }    
+    }   
+    
+    return 0;     
+}     
