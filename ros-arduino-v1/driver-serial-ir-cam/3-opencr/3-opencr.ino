@@ -1,61 +1,4 @@
-<<<<<<< HEAD
-const byte numChars = 32;
-char receivedChars[numChars];
 
-boolean newData = false;
-
-void setup() {
-    Serial.begin(115200);
-    delay(2000);
-    Serial.println("<Arduino is ready>");
-    Serial2.begin(9600);
-}
-
-void loop() {
-    recvWithStartEndMarkers();
-    showNewData();
-    delay(5000);
-    Serial.println("esto es loop");
-}
-
-void recvWithStartEndMarkers() {
-    static boolean recvInProgress = false;
-    static byte ndx = 0;
-    char startMarker = '<';
-    char endMarker = '>';
-    char rc;
- //
-    while (Serial2.available() > 0 && newData == false) {
-        rc = Serial2.read();
-
-        if (recvInProgress == true) {
-            if (rc != endMarker) {
-                receivedChars[ndx] = rc;
-                ndx++;
-                if (ndx >= numChars) {
-                    ndx = numChars - 1;
-                }
-            }
-            else {
-                receivedChars[ndx] = '\0'; // terminate the string
-                recvInProgress = false;
-                ndx = 0;
-                newData = true;
-            }
-        }
-
-        else if (rc == startMarker) {
-            recvInProgress = true;
-        }
-    }
-}
-
-void showNewData() {
-    if (newData == true) {
-        Serial.print("This just in ... ");
-        Serial.println(receivedChars);
-        newData = false;
-=======
 /*******************************************************************************
 * Copyright 2016 ROBOTIS CO., LTD.
 *
@@ -100,7 +43,7 @@ void setup()
   nh.advertise(joint_states_pub);
   nh.advertise(battery_state_pub);
   nh.advertise(mag_pub);
-  nh.advertise(pub_ir);  //creacion de nodo para transmitir la imagen térmica
+  nh.advertise(pub_ir);  //creacion del topic para transmitir la imagen térmica
 
   tf_broadcaster.init(nh);
 
@@ -147,7 +90,7 @@ void loop()
     } 
     else {
       motor_driver.controlMotor(WHEEL_RADIUS, WHEEL_SEPARATION, goal_velocity);
->>>>>>> T018-ir-cam-ros
+
     }
     tTime[0] = t;
   }
@@ -175,8 +118,8 @@ void loop()
 
   if ((t-tTime[4]) >= (1000 / VERSION_INFORMATION_PUBLISH_FREQUENCY))
   {
-    //publishVersionInfoMsg();
-    //tTime[4] = t;
+    publishVersionInfoMsg();
+    tTime[4] = t;
   }
 
 #ifdef DEBUG
@@ -187,9 +130,9 @@ void loop()
   }
 #endif
 
-  if ((t - tTime[7]) >= (1000 / IR_PUBLISH_FREQUENCY))
+  if ((t - tTime[7]) >= (500 / IR_PUBLISH_FREQUENCY))
   {
-    publishIR(); //*****    1 vez por segundo se pide un frame de cámara térmica
+    publishIR(); //*****    2 veces por segundo se pide un frame de cámara térmica
     tTime[7] = t;
   }
 
@@ -286,44 +229,75 @@ void resetCallback(const std_msgs::Empty& reset_msg)
  * Publish msgs: Publish IR
  *******************************************/
 void publishIR(void){
+  num++;
+  String numtext = (String) num;
 
-  //TODO:
   // mandar caracter 
   // y leer array de 768
-  //ponerlo detro de hardware
-  version_info_msg.hardware = "{20,20,22,19,21,21,24,20,21,21,24,20,21,21,24,19,20,21,24,19,21,21,25,21,26,28,31,27,28,28,31,26,"
-"19,21,20,20,20,21,20,20,20,21,20,20,20,21,20,20,21,21,21,20,21,22,21,22,25,26,27,26,27,28,28,28,"
-"20,20,22,19,20,21,22,20,20,21,23,20,21,21,24,20,20,21,22,20,21,21,23,20,21,23,26,24,27,28,30,28,"
-"20,21,20,43,20,42,20,42,20,41,20,41,21,41,21,41,21,21,21,20,21,21,20,20,21,22,23,24,27,28,28,28,";
-/*
-"20,21,22,19,20,21,22,20,21,21,22,20,21,21,22,20,21,21,22,20,21,21,22,20,21,21,23,21,24,26,29,27,"
-"20,21,20,20,20,20,20,20,20,22,21,20,21,21,21,21,21,21,21,21,21,21,21,20,21,21,21,21,22,24,26,26,"
-"20,21,22,19,20,21,22,20,21,21,22,20,21,21,22,20,21,21,23,21,21,21,23,20,21,21,23,20,21,22,25,24,"
-"20,21,20,20,20,21,20,20,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,20,21,21,21,21,21,22,22,23,"
-"20,21,22,20,20,21,22,20,21,21,23,21,22,22,22,21,21,21,22,20,21,21,22,20,21,22,22,20,21,21,24,20,"
-"20,21,20,20,20,21,20,21,21,22,21,21,24,23,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,22,21,23,"
-"20,20,22,19,20,21,23,20,21,21,23,21,23,25,23,21,21,22,22,21,21,22,23,20,21,21,22,20,22,22,24,20,"
-"21,21,20,20,21,21,21,20,21,21,21,21,23,22,21,21,21,22,21,21,21,21,21,21,21,22,21,21,21,23,21,23,"
-"20,21,22,20,21,21,23,20,21,21,23,20,21,21,23,21,21,21,23,20,21,22,22,21,21,22,23,20,22,21,25,23,"
-"20,21,20,20,20,21,21,20,21,21,21,20,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,24,22,24,"
-"21,21,22,20,21,21,22,20,21,21,22,20,21,21,22,20,21,21,23,21,21,21,22,20,21,22,23,20,23,22,27,25,"
-"21,21,20,20,21,21,21,20,21,21,21,20,21,21,21,21,21,22,21,21,22,21,21,21,21,22,21,22,22,24,25,26,"
-"21,21,23,20,21,21,22,20,21,21,22,20,21,21,22,20,21,21,23,21,21,21,23,20,21,22,24,21,24,25,27,26,"
-"20,21,20,20,21,21,20,20,21,21,21,21,21,22,21,21,21,22,21,21,22,22,21,21,21,23,21,23,24,26,26,26,"
-"21,21,23,20,21,21,22,20,21,21,22,20,21,22,23,20,21,22,22,20,21,22,23,21,22,22,26,23,27,27,28,25,"
-"21,21,20,21,21,21,21,20,21,21,21,21,21,21,20,21,21,21,21,21,21,22,21,21,21,23,23,26,27,28,26,26,"
-"21,21,22,20,21,21,22,20,21,21,22,20,21,21,22,20,21,21,23,20,21,21,23,20,22,22,27,25,27,28,29,27,"
-"21,21,20,20,21,21,20,21,20,21,21,20,21,21,21,20,21,21,21,21,21,22,22,22,22,25,25,25,27,28,27,27,"
-"21,21,23,20,21,22,22,20,21,21,22,20,21,21,22,20,21,22,22,20,21,21,23,21,24,24,27,24,26,27,29,25,"
-"21,22,20,21,21,22,20,20,21,22,21,21,21,22,20,21,21,22,21,21,21,22,21,22,23,26,24,26,25,27,27,26}";
-*/
-  version_info_msg.software = "0.0.0";
-  version_info_msg.firmware = FIRMWARE_VER;
-
-  pub_ir.publish(&version_info_msg);
   
+  if(recvInProgress == false){
+      DEBUG_SERIAL.println("Peticion de frame ir ");
+      DEBUG_SERIAL.print(num);
+      Serial4.write("<IR>");
+      receivedChars="";
+      delay(1);  
+  }
+  
+  recvWithStartEndMarkers();
+  
+  if (newData == true) {
+     DEBUG_SERIAL.println("This just in ... ");
+     //DEBUG_SERIAL.println(receivedChars);
+
+     version_info_msg.hardware = receivedChars.c_str();
+     version_info_msg.software = numtext.c_str();
+     version_info_msg.firmware = FIRMWARE_VER;
+     pub_ir.publish(&version_info_msg);
+     newData = false;
+     receivedChars = "";     
+  }
+
 }
 
+void recvWithStartEndMarkers() {
+    
+    static byte ndx = 0;
+    char startMarker = '<';
+    char endMarker = '>';
+    char rc;
+    boolean cancel = false;
+
+    int init = millis();
+ 
+    while (Serial4.available() > 0 && newData == false && cancel == false) {
+        rc = Serial4.read();
+        //if
+        if (recvInProgress == true) {
+            if (rc != endMarker) {
+                receivedChars = receivedChars + rc;
+                ndx++;
+                if (ndx >= numChars) {
+                    ndx = numChars - 1;
+                }
+            }
+            else {
+                //receivedChars[ndx] = '\0'; // terminate the string
+                recvInProgress = false;
+                ndx = 0;
+                newData = true;
+            }
+        } else if (rc == startMarker) {
+            recvInProgress = true;
+        } //fin if
+        
+        if(millis() > init+100){ //whatchdog software
+          cancel = true;
+          recvInProgress == false;
+        }
+        
+    } // fin while()
+    
+}
 
 
 /*******************************************************************************

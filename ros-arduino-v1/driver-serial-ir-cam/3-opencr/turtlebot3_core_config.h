@@ -52,7 +52,7 @@
 #define DRIVE_INFORMATION_PUBLISH_FREQUENCY    30   //hz
 #define VERSION_INFORMATION_PUBLISH_FREQUENCY  1    //hz 
 #define DEBUG_LOG_FREQUENCY                    10   //hz 
-#define IR_PUBLISH_FREQUENCY                    1    //hz  
+#define IR_PUBLISH_FREQUENCY                    1   //hz  
 
 #define WHEEL_NUM                        2
 
@@ -88,6 +88,7 @@ void publishVersionInfoMsg(void);
 void publishBatteryStateMsg(void);
 void publishDriveInformation(void);
 void publishIR(void);
+void recvWithStartEndMarkers(void);
 
 ros::Time rosNow(void);
 ros::Time addMicros(ros::Time & t, uint32_t _micros); // deprecated
@@ -246,5 +247,14 @@ double odom_vel[3];
 *******************************************************************************/
 bool setup_end        = false;
 uint8_t battery_state = 0;
+
+/*******************************************************************************
+* Frame number IR Cam
+*******************************************************************************/
+int num = 0;
+String receivedChars="";
+boolean recvInProgress = false;
+boolean newData = false;
+const byte numChars = 3000;
 
 #endif // TURTLEBOT3_CORE_CONFIG_H_
