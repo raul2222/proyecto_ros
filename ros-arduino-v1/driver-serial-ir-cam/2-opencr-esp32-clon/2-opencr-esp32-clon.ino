@@ -14,8 +14,8 @@ void setup() {
 
 void loop() {
     if(recvInProgress == false){
-        delay(7000);
-        Serial.println("esto es loop");
+        delay(500);
+        //Serial.println("esto es loop");
         receivedChars="";
         getImage();
         delay(1);  
