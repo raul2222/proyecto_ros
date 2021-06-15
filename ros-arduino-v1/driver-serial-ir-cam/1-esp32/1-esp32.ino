@@ -25,7 +25,7 @@ int mycount = 0;
 
 void setup() {
     Serial.begin(115200);
-    Serial2.begin(115200);
+    Serial2.begin(57600);
     delay(1000);
     Serial.println("Configuring WDT...");
     esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
@@ -130,7 +130,7 @@ int getImage(){
     Frame.remove(769);
     Frame = Frame + "}>";
 
-    Serial2.print(Frame);
+    Serial2.write(Frame.c_str());
     Serial.print(Frame.substring(0,20));
     //Serial.println(Frame.substring(386,772));
 
@@ -160,7 +160,7 @@ void recvWithStartEndMarkers() {
  
     while (Serial2.available() > 0 && newData == false) {
         rc = Serial2.read();
-
+        Serial.print(rc);
         if (recvInProgress == true) {
             if (rc != endMarker) {
                 receivedChars[ndx] = rc;

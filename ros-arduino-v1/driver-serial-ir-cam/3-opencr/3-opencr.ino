@@ -26,7 +26,13 @@ void setup()
 {
   DEBUG_SERIAL.begin(57600);
 
-  // Initialize ROS node handle, advertise and subscribe the topics
+  //Serial3.begin(115200);
+  Serial2.begin(57600);
+
+
+  delay(1000);
+  DEBUG_SERIAL.println("Peticion de frame ir ");
+  // Initialze ROS node handle, advertise and subscribe the topics
   nh.initNode();
   nh.getHardware()->setBaud(115200);
 
@@ -69,6 +75,7 @@ void setup()
   pinMode(LED_WORKING_CHECK, OUTPUT);
 
   setup_end = true;
+
 }
 
 /*******************************************************************************
@@ -76,6 +83,7 @@ void setup()
 *******************************************************************************/
 void loop()
 {
+  recvWithStartEndMarkers();
   uint32_t t = millis();
   updateTime();
   updateVariable(nh.connected());
@@ -130,7 +138,7 @@ void loop()
   }
 #endif
 
-  if ((t - tTime[7]) >= (500 / IR_PUBLISH_FREQUENCY))
+  if ((t - tTime[7]) >= (1000 / IR_PUBLISH_FREQUENCY))
   {
     publishIR(); //*****    2 veces por segundo se pide un frame de cámara térmica
     tTime[7] = t;
@@ -232,30 +240,50 @@ void publishIR(void){
   num++;
   String numtext = (String) num;
 
+
+  
   // mandar caracter 
   // y leer array de 768
   
   if(recvInProgress == false){
-      DEBUG_SERIAL.println("Peticion de frame ir ");
-      DEBUG_SERIAL.print(num);
-      Serial4.write("<IR>");
+      //DEBUG_SERIAL.println("Peticion de frame ir ");
+      //DEBUG_SERIAL.print(num);
+
+      Serial2.write("<IR>");
+
       receivedChars="";
       delay(1);  
+      //version_info_msg.hardware = "estoy en write ir ";
+      //version_info_msg.software = "0.0.0";
+      //version_info_msg.firmware = numtext.c_str();
+      //pub_ir.publish(&version_info_msg);
   }
   
   recvWithStartEndMarkers();
   
   if (newData == true) {
-     DEBUG_SERIAL.println("This just in ... ");
-     //DEBUG_SERIAL.println(receivedChars);
 
-     version_info_msg.hardware = receivedChars.c_str();
-     version_info_msg.software = numtext.c_str();
-     version_info_msg.firmware = FIRMWARE_VER;
+     /*
+     version_info_msg.hardware = "sen envio la informacion final ";
+     version_info_msg.software = "0.0.0";
+     version_info_msg.firmware = numtext.c_str();
+     pub_ir.publish(&version_info_msg);
+     */
+     //char frame[3000] = receivedChars.c_str();
+     String uno = receivedChars.substring(0,100);
+
+     
+     
+     version_info_msg.hardware = receivedChars;
+     version_info_msg.software = "0000";
+     version_info_msg.firmware = numtext.c_str();
      pub_ir.publish(&version_info_msg);
      newData = false;
      receivedChars = "";     
   }
+
+  delay(1);
+  recvWithStartEndMarkers();
 
 }
 
@@ -266,11 +294,14 @@ void recvWithStartEndMarkers() {
     char endMarker = '>';
     char rc;
     boolean cancel = false;
-
+    String numtext = (String) num;
+    
     int init = millis();
  
-    while (Serial4.available() > 0 && newData == false && cancel == false) {
-        rc = Serial4.read();
+    while (Serial2.available() > 0 && newData == false && cancel == false) {
+        rc = Serial2.read();        
+        //String a = rc;
+
         //if
         if (recvInProgress == true) {
             if (rc != endMarker) {
@@ -288,6 +319,7 @@ void recvWithStartEndMarkers() {
             }
         } else if (rc == startMarker) {
             recvInProgress = true;
+
         } //fin if
         
         if(millis() > init+100){ //whatchdog software
@@ -296,6 +328,8 @@ void recvWithStartEndMarkers() {
         }
         
     } // fin while()
+
+
     
 }
 
