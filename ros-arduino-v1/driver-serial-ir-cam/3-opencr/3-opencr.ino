@@ -255,7 +255,7 @@ void publishIR(void){
 
      
      
-     version_info_msg.hardware = receivedChars;
+     version_info_msg.hardware = receivedChars.c_str();
      version_info_msg.software = "0000";
      version_info_msg.firmware = numtext.c_str();
      pub_ir.publish(&version_info_msg);
