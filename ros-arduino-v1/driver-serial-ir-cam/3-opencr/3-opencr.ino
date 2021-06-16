@@ -240,25 +240,6 @@ void publishIR(void){
   num++;
   String numtext = (String) num;
 
-
-  
-  // mandar caracter 
-  // y leer array de 768
-  
-  if(recvInProgress == false){
-      //DEBUG_SERIAL.println("Peticion de frame ir ");
-      //DEBUG_SERIAL.print(num);
-
-      Serial2.write("<IR>");
-
-      receivedChars="";
-      delay(1);  
-      //version_info_msg.hardware = "estoy en write ir ";
-      //version_info_msg.software = "0.0.0";
-      //version_info_msg.firmware = numtext.c_str();
-      //pub_ir.publish(&version_info_msg);
-  }
-  
   recvWithStartEndMarkers();
   
   if (newData == true) {
@@ -281,9 +262,26 @@ void publishIR(void){
      newData = false;
      receivedChars = "";     
   }
+  
+  // mandar caracter 
+  // y leer array de 768
+  
+  if(recvInProgress == false){
+      //DEBUG_SERIAL.println("Peticion de frame ir ");
+      //DEBUG_SERIAL.print(num);
 
-  delay(1);
-  recvWithStartEndMarkers();
+      Serial2.write("<IR>");
+
+      //receivedChars="";
+      delay(1);  
+      //version_info_msg.hardware = "estoy en write ir ";
+      //version_info_msg.software = "0.0.0";
+      //version_info_msg.firmware = numtext.c_str();
+      //pub_ir.publish(&version_info_msg);
+  }
+  
+
+
 
 }
 
@@ -322,7 +320,7 @@ void recvWithStartEndMarkers() {
 
         } //fin if
         
-        if(millis() > init+100){ //whatchdog software
+        if(millis() > init+150){ //whatchdog software
           cancel = true;
           recvInProgress == false;
         }
