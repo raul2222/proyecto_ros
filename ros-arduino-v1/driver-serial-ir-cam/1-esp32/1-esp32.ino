@@ -26,7 +26,7 @@ int mycount = 0;
 void setup() {
     Serial.begin(115200);
     Serial2.begin(57600);
-    delay(1000);
+    delay(1500);
     Serial.println("Configuring WDT...");
     esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
     esp_task_wdt_add(NULL); //add current thread to WDT watch
@@ -55,7 +55,7 @@ void setup() {
     MLX90640_I2CWrite(0x33, 0x800D, 6401);// Schreibt den Wert 1901 (HEX) = 6401 (DEC) ins Register an die Stelle 0x800D, damit der Sensor ausgelesen werden kann!!!
     //MLX90640_SetRefreshRate(MLX90640_address, 0x04); //Set rate to 2Hz
     MLX90640_SetRefreshRate(MLX90640_address, 0x03); //Set rate to 4Hz
-  //MLX90640_SetRefreshRate(MLX90640_address, 0x07); //Set rate to 64Hz
+    //MLX90640_SetRefreshRate(MLX90640_address, 0x07); //Set rate to 64Hz
 
     esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
     esp_task_wdt_add(NULL); //add current thread to WDT watch
@@ -64,7 +64,7 @@ void setup() {
 }
 
 void loop() {
-    //whtchdog esp32
+    //whatchdog esp32
     esp_task_wdt_reset();
 
     recvWithStartEndMarkers();
@@ -75,10 +75,14 @@ void loop() {
         getImage();
         SendFrame == false;
         newData = false;
+        int last = millis();
     }
     
     delay(1);
-
+    // si no recibo una peticion en 15 segundos provoco un reset
+    if(millis() > (last+15000)){
+      delay (4100);
+    }
 #ifdef DEBUG
     //Serial.println("loop1");
 #endif
@@ -123,7 +127,7 @@ int getImage(){
   }
   if(validFrame == false){
     Serial.println("invalid");
-    delay (4000);
+    delay (4100);
   }
 
   if(SendFrame == true) {
@@ -131,7 +135,9 @@ int getImage(){
     Frame = Frame + "}>";
 
     Serial2.write(Frame.c_str());
-    Serial.print(Frame.substring(0,20));
+    delay(1);
+    Serial.print(Frame.substring(0,10));
+    delay(1);
     //Serial.println(Frame.substring(386,772));
 
   }

@@ -243,19 +243,9 @@ void publishIR(void){
   recvWithStartEndMarkers();
   
   if (newData == true) {
-
-     /*
-     version_info_msg.hardware = "sen envio la informacion final ";
-     version_info_msg.software = "0.0.0";
-     version_info_msg.firmware = numtext.c_str();
-     pub_ir.publish(&version_info_msg);
-     */
-     //char frame[3000] = receivedChars.c_str();
-     String uno = receivedChars.substring(0,100);
-
-     
      
      version_info_msg.hardware = receivedChars.c_str();
+     delay(1);
      version_info_msg.software = "0000";
      version_info_msg.firmware = numtext.c_str();
      pub_ir.publish(&version_info_msg);
@@ -269,20 +259,10 @@ void publishIR(void){
   if(recvInProgress == false){
       //DEBUG_SERIAL.println("Peticion de frame ir ");
       //DEBUG_SERIAL.print(num);
-
       Serial2.write("<IR>");
-
-      //receivedChars="";
       delay(1);  
-      //version_info_msg.hardware = "estoy en write ir ";
-      //version_info_msg.software = "0.0.0";
-      //version_info_msg.firmware = numtext.c_str();
-      //pub_ir.publish(&version_info_msg);
   }
   
-
-
-
 }
 
 void recvWithStartEndMarkers() {
@@ -299,7 +279,6 @@ void recvWithStartEndMarkers() {
     while (Serial2.available() > 0 && newData == false && cancel == false) {
         rc = Serial2.read();        
         //String a = rc;
-
         //if
         if (recvInProgress == true) {
             if (rc != endMarker) {
@@ -320,14 +299,18 @@ void recvWithStartEndMarkers() {
 
         } //fin if
         
-        if(millis() > init+150){ //whatchdog software
+        if(millis() > (init+150)){ //whatchdog software
+          version_info_msg.hardware = "watchdog software";
+          delay(1);
+          version_info_msg.software = "0000";
+          version_info_msg.firmware = numtext.c_str();
+          pub_ir.publish(&version_info_msg);
           cancel = true;
           recvInProgress == false;
+          
         }
         
     } // fin while()
-
-
     
 }
 
