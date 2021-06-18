@@ -24,7 +24,7 @@ int last = millis();
 int mycount = 0;
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(9600);
     Serial2.begin(57600);
     delay(1500);
     Serial.println("Configuring WDT...");

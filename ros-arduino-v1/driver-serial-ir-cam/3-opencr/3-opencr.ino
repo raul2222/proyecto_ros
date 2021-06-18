@@ -27,7 +27,7 @@ void setup()
   DEBUG_SERIAL.begin(57600);
 
   //Serial3.begin(115200);
-  Serial2.begin(57600);
+  Serial4.begin(57600);
 
 
   delay(1000);
@@ -238,9 +238,11 @@ void resetCallback(const std_msgs::Empty& reset_msg)
  *******************************************/
 void publishIR(void){
   num++;
-  String numtext = (String) num;
+  String numtext = (String) num;  
+  
+ 
 
-  recvWithStartEndMarkers();
+  recvWithStartEndMarkers(); 
   
   if (newData == true) {
      
@@ -251,6 +253,9 @@ void publishIR(void){
      pub_ir.publish(&version_info_msg);
      newData = false;
      receivedChars = "";     
+  } else {
+  
+
   }
   
   // mandar caracter 
@@ -259,9 +264,12 @@ void publishIR(void){
   if(recvInProgress == false){
       //DEBUG_SERIAL.println("Peticion de frame ir ");
       //DEBUG_SERIAL.print(num);
-      Serial2.write("<IR>");
+          
+
+     //receivedChars = "";  
+      Serial4.println("<IR>");
       delay(1);  
-  }
+  } 
   
 }
 
@@ -276,8 +284,8 @@ void recvWithStartEndMarkers() {
     
     int init = millis();
  
-    while (Serial2.available() > 0 && newData == false && cancel == false) {
-        rc = Serial2.read();        
+    while (Serial4.available() > 0 && newData == false && cancel == false) {
+        rc = Serial4.read();        
         //String a = rc;
         //if
         if (recvInProgress == true) {
