@@ -110,4 +110,3 @@ boolean isConnected()
     return (false); //Sensor did not ACK
   return (true);
 }
-

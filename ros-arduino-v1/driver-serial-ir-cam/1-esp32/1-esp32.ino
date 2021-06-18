@@ -1,7 +1,11 @@
 #include <Wire.h>
 #include <esp_task_wdt.h>
 //7 seconds WDT
+<<<<<<< HEAD:ros-arduino/driver-serial-ir-cam/esp32/esp32.ino
 #define WDT_TIMEOUT 7
+=======
+#define WDT_TIMEOUT 4
+>>>>>>> develop:ros-arduino-v1/driver-serial-ir-cam/1-esp32/1-esp32.ino
 #include "MLX90640_API.h"
 #include "MLX90640_I2C_Driver.h"
 #define DEBUG 1 
@@ -24,9 +28,15 @@ int last = millis();
 int mycount = 0;
 
 void setup() {
+<<<<<<< HEAD:ros-arduino/driver-serial-ir-cam/esp32/esp32.ino
     Serial.begin(115200);
     Serial2.begin(115200);
     delay(1000);
+=======
+    Serial.begin(9600);
+    Serial2.begin(57600);
+    delay(1500);
+>>>>>>> develop:ros-arduino-v1/driver-serial-ir-cam/1-esp32/1-esp32.ino
     Serial.println("Configuring WDT...");
     esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
     esp_task_wdt_add(NULL); //add current thread to WDT watch
@@ -53,9 +63,15 @@ void setup() {
 
     //Once params are extracted, we can release eeMLX90640 array
     MLX90640_I2CWrite(0x33, 0x800D, 6401);// Schreibt den Wert 1901 (HEX) = 6401 (DEC) ins Register an die Stelle 0x800D, damit der Sensor ausgelesen werden kann!!!
+<<<<<<< HEAD:ros-arduino/driver-serial-ir-cam/esp32/esp32.ino
     MLX90640_SetRefreshRate(MLX90640_address, 0x04); //Set rate to 2Hz
   //MLX90640_SetRefreshRate(MLX90640_address, 0x03); //Set rate to 4Hz
   //MLX90640_SetRefreshRate(MLX90640_address, 0x07); //Set rate to 64Hz
+=======
+    //MLX90640_SetRefreshRate(MLX90640_address, 0x04); //Set rate to 2Hz
+    MLX90640_SetRefreshRate(MLX90640_address, 0x03); //Set rate to 4Hz
+    //MLX90640_SetRefreshRate(MLX90640_address, 0x07); //Set rate to 64Hz
+>>>>>>> develop:ros-arduino-v1/driver-serial-ir-cam/1-esp32/1-esp32.ino
 
     esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
     esp_task_wdt_add(NULL); //add current thread to WDT watch
@@ -64,6 +80,7 @@ void setup() {
 }
 
 void loop() {
+<<<<<<< HEAD:ros-arduino/driver-serial-ir-cam/esp32/esp32.ino
     /*
     if (millis() - last >= 2000 && i < 5) {
         Serial.println("Resetting WDT...");
@@ -75,19 +92,23 @@ void loop() {
         }
     }*/
     //whtchdog esp32
+=======
+    //whatchdog esp32
+>>>>>>> develop:ros-arduino-v1/driver-serial-ir-cam/1-esp32/1-esp32.ino
     esp_task_wdt_reset();
 
     recvWithStartEndMarkers();
     showNewData();
-    //Serial.println("loop");
 
     if(SendFrame == true){
-        Serial.println("loop2");
+        //Serial.println("loop2");
         getImage();
         SendFrame == false;
         newData = false;
+        int last = millis();
     }
     
+<<<<<<< HEAD:ros-arduino/driver-serial-ir-cam/esp32/esp32.ino
     delay(500);
     mycount++;
     if (mycount > 20 ){
@@ -99,6 +120,13 @@ void loop() {
     
 
 
+=======
+    delay(1);
+    // si no recibo una peticion en 15 segundos provoco un reset
+    if(millis() > (last+15000)){
+      delay (4100);
+    }
+>>>>>>> develop:ros-arduino-v1/driver-serial-ir-cam/1-esp32/1-esp32.ino
 #ifdef DEBUG
     //Serial.println("loop1");
 #endif
@@ -107,7 +135,14 @@ void loop() {
 
 
 int getImage(){
+<<<<<<< HEAD:ros-arduino/driver-serial-ir-cam/esp32/esp32.ino
   Serial.println("Image ");
+=======
+  i++;
+  Serial.print("Image "); 
+  Serial.println(i);
+  char buff[110];
+>>>>>>> develop:ros-arduino-v1/driver-serial-ir-cam/1-esp32/1-esp32.ino
   long startTime = millis();
   int status = 0;
   for (byte x = 0 ; x < 2 ; x++)
@@ -129,6 +164,7 @@ int getImage(){
 
   for (int x = 0 ; x < 768 ; x++)
   {
+<<<<<<< HEAD:ros-arduino/driver-serial-ir-cam/esp32/esp32.ino
     if(x % 32 == 0) 
     if(isnan(mlx90640To[x])){
       validFrame = false;
@@ -149,6 +185,32 @@ int getImage(){
     Frame = Frame + "}>";
     Serial.println(Frame);
     Serial2.println(Frame);
+=======
+    //Serial.print(mlx90640To[x]);
+    Frame = Frame + mlx90640To[x] + ",";
+    //Serial.print(","); 
+  }
+  Frame.toCharArray(buff,100);
+  //Serial.println(buff);
+  if(StrContains(buff, "nan") > 0 ){
+    validFrame = false;
+  }
+  if(validFrame == false){
+    Serial.println("invalid");
+    delay (4100);
+  }
+
+  if(SendFrame == true) {
+    Frame.remove(769);
+    Frame = Frame + "}>";
+
+    Serial2.write(Frame.c_str());
+    delay(1);
+    Serial.print(Frame.substring(0,10));
+    delay(1);
+    //Serial.println(Frame.substring(386,772));
+
+>>>>>>> develop:ros-arduino-v1/driver-serial-ir-cam/1-esp32/1-esp32.ino
   }
 
   SendFrame = false;
@@ -175,7 +237,7 @@ void recvWithStartEndMarkers() {
  
     while (Serial2.available() > 0 && newData == false) {
         rc = Serial2.read();
-
+        Serial.print(rc);
         if (recvInProgress == true) {
             if (rc != endMarker) {
                 receivedChars[ndx] = rc;
@@ -200,10 +262,10 @@ void recvWithStartEndMarkers() {
 
 void showNewData() {
     if (newData == true) {
-        //Serial.print("This just in ... ");
+        Serial.print("This just in ... ");
         Serial.println(receivedChars);
         if (StrContains(receivedChars, "IR") > 0){
-          Serial.println("entra");
+          //Serial.println("entra");
           SendFrame = true;
         } else {
           newData = false;
