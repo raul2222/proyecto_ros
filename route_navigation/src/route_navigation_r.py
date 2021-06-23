@@ -13,12 +13,31 @@ from collections import OrderedDict
 
 
 ## Puntos de la casa
+"""
 waypoints = [
-    ['GO_TO_SECTOR1', (-1.0, -0.8, 0.0), (0.0, 0.0, -1.57, 0.0)],
-    ['GO_TO_SECTOR2', (-1.5, -1.0, 0.0), (0.0, 0.0, 3.14, 0.0)],
-    ['GO_TO_SECTOR3',(-1.5, 0.5, 0.0), (0.0, 0.0, 1.57, 0.0)]
+    ['GO_TO_SECTOR1', (15.9, -3.7, 0.0), (0.0, 0.0, 1.0, 0.0)],
+    ['GO_TO_SECTOR2', (15.0, -3.3, 0.0), (0.0, 0.0, -0.82, 0.57)],
+    ['GO_TO_SECTOR3',(15.0, -4.0, 0.0), (0.0, 0.0, -0.17, 1.0)],
+    ['GO_TO_SECTOR4', (15.7, -5.0, 0.0), (0.0, 0.0, -0.82, 0.57)],
+    ['GO_TO_SECTOR5', (15.7, -5.1, 0.0), (0.0, 0.0, 1.0, 0.0)],
+    ['GO_TO_SECTOR6',(-1.5, 0.5, 0.0), (0.0, 0.0, -0.17, 1.0)],
+    ['GO_TO_SECTOR5B', (15.7, -5.1, 0.0), (0.0, 0.0, 0.54, 0.83)],
+    ['GO_TO_SECTOR4B', (15.8, -5.0, 0.0), (0.0, 0.0, 1.0, 0.0)],
+    ['GO_TO_SECTOR3B',(15.0, -4.0, 0.0), (0.0, 0.0, 0.54, 0.83)],
+    ['GO_TO_SECTOR2B', (15.0, -3.3, 0.0), (0.0, 0.0, -0.17, 1.0)]
+]
+"""
+
+waypoints = [
+    ['GO_TO_SECTOR1', (15.9, -3.7, 0.0), (0.0, 0.0, 1.0, 0.0)],
+    ['GO_TO_SECTOR2', (15.0, -3.3, 0.0), (0.0, 0.0, -0.82, 0.57)],
+    ['GO_TO_SECTOR3',(15.0, -4.0, 0.0), (0.0, 0.0, -0.17, 1.0)],
+    ['GO_TO_SECTOR4', (15.7, -5.0, 0.0), (0.0, 0.0, 1.0, 0.0)],
+    ['GO_TO_SECTOR3B',(15.0, -4.0, 0.0), (0.0, 0.0, 0.54, 0.83)],
+    ['GO_TO_SECTOR2B', (15.0, -3.3, 0.0), (0.0, 0.0, -0.17, 1.0)]
 ]
 
+response = '1'
 
 
 ## Descripcion de los estados
@@ -64,8 +83,10 @@ class Navigate(State):
         # Comprobamos el estado de la navegacion
         nav_state = self._move_base.get_state()
         rospy.loginfo("[Result] State: %d" % (nav_state))
-        nav_state = 3
-
+        # nav_state = 3
+        
+        while nav_state != 3:
+            rospy.loginfo("esperando respuesta")
         if nav_state == 3:
             return '1'
         else:
@@ -80,11 +101,26 @@ class main():
         sm.userdata.sm_input = 1
 
         with sm:
+            """
             StateMachine.add('POWER_ON', PowerOnRobot(), transitions={'1':waypoints[0][0], '0':'aborted'})
             StateMachine.add(waypoints[0][0], Navigate( waypoints[0][1], waypoints[0][2], waypoints[0][0]), transitions={'1':waypoints[1][0],'0':'aborted'})
             StateMachine.add(waypoints[1][0], Navigate( waypoints[1][1], waypoints[1][2], waypoints[1][0]), transitions={'1':waypoints[2][0],'0':'aborted'})
-            StateMachine.add(waypoints[2][0], Navigate( waypoints[2][1], waypoints[2][2], waypoints[2][0]), transitions={'1':waypoints[0][0],'0':'aborted'})
-            
+            StateMachine.add(waypoints[2][0], Navigate( waypoints[2][1], waypoints[2][2], waypoints[2][0]), transitions={'1':waypoints[3][0],'0':'aborted'})
+            StateMachine.add(waypoints[3][0], Navigate( waypoints[3][1], waypoints[3][2], waypoints[3][0]), transitions={'1':waypoints[4][0],'0':'aborted'})
+            StateMachine.add(waypoints[4][0], Navigate( waypoints[4][1], waypoints[4][2], waypoints[4][0]), transitions={'1':waypoints[5][0],'0':'aborted'})
+            StateMachine.add(waypoints[5][0], Navigate( waypoints[5][1], waypoints[5][2], waypoints[5][0]), transitions={'1':waypoints[6][0],'0':'aborted'})
+            StateMachine.add(waypoints[6][0], Navigate( waypoints[6][1], waypoints[6][2], waypoints[6][0]), transitions={'1':waypoints[7][0],'0':'aborted'})
+            StateMachine.add(waypoints[7][0], Navigate( waypoints[7][1], waypoints[7][2], waypoints[7][0]), transitions={'1':waypoints[8][0],'0':'aborted'})
+            StateMachine.add(waypoints[8][0], Navigate( waypoints[8][1], waypoints[8][2], waypoints[8][0]), transitions={'1':waypoints[0][0],'0':'aborted'})
+            """
+            StateMachine.add('POWER_ON', PowerOnRobot(), transitions={'1':waypoints[0][0], '0':'aborted'})
+            StateMachine.add(waypoints[0][0], Navigate( waypoints[0][1], waypoints[0][2], waypoints[0][0]), transitions={'1':waypoints[1][0],'0':'aborted'})
+            StateMachine.add(waypoints[1][0], Navigate( waypoints[1][1], waypoints[1][2], waypoints[1][0]), transitions={'1':waypoints[2][0],'0':'aborted'})
+            StateMachine.add(waypoints[2][0], Navigate( waypoints[2][1], waypoints[2][2], waypoints[2][0]), transitions={'1':waypoints[3][0],'0':'aborted'})
+            StateMachine.add(waypoints[3][0], Navigate( waypoints[3][1], waypoints[3][2], waypoints[3][0]), transitions={'1':waypoints[4][0],'0':'aborted'})
+            StateMachine.add(waypoints[4][0], Navigate( waypoints[4][1], waypoints[4][2], waypoints[4][0]), transitions={'1':waypoints[5][0],'0':'aborted'})
+            StateMachine.add(waypoints[5][0], Navigate( waypoints[5][1], waypoints[5][2], waypoints[5][0]), transitions={'1':waypoints[0][0],'0':'aborted'})
+
         intro_server = IntrospectionServer('Robot_vigilante',sm, '/SM_ROOT')
         intro_server.start()
 
@@ -96,6 +132,7 @@ class main():
     def shutdown(self):
         rospy.loginf("Parando la ejecucion...")
         rospy.sleep(1)
+
 
 if __name__=='__main__':
     try:

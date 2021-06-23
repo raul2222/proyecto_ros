@@ -1,7 +1,7 @@
 <launch>
   <!-- Arguments -->
   <arg name="model" default="burger"/>
-  <arg name="map_file" default="$(find my_navigation_stack)/maps/tb3_nave2_map.yaml"/>
+  <arg name="map_file" default="$(find my_navigation_stack)/maps/tb3_nave3_map.yaml"/>
   <arg name="open_rviz" default="true"/>
   <arg name="rviz_config" default="$(find my_navigation_stack)/rviz/my_config.rviz"/>
 
@@ -11,9 +11,10 @@
   </include>
 
   <!-- GAZEBO -->
-  <arg name="x_pos" default="0.0"/>
-  <arg name="y_pos" default="0.0"/>
+  <arg name="x_pos" default="15.0"/>
+  <arg name="y_pos" default="-3.3"/>
   <arg name="z_pos" default="0.0"/>
+  <arg name="a_pos" default="6.0"/>
 
   <!--
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -25,6 +26,7 @@
     <arg name="debug" value="false"/>
   </include>
   -->
+  
 
   <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
 
@@ -38,7 +40,12 @@
     args="$(arg map_file)"/>
 
   <!-- AMCL -->
-  <include file="$(find turtlebot3_navigation)/launch/amcl.launch"/>
+  <include file="$(find turtlebot3_navigation)/launch/amcl.launch">
+    <arg name="initial_pose_x" value="$(arg x_pos)"/>
+    <arg name="initial_pose_y" value="$(arg y_pos)"/>
+    <arg name="initial_pose_a" value="$(arg a_pos)"/>
+  </include>
+  
 
   <!-- move_base -->
 

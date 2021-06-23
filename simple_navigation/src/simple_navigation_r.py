@@ -5,11 +5,33 @@ import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from simple_navigation_service_msg.srv import SimpleNavigationServiceMessage, SimpleNavigationServiceMessageResponse
 
+"""Points = {
+    1: (15.9, -3.7, 6.0),
+    2: (15.0, -3.3, 4.25),
+    3: (15.0, -4.0, 6.0),
+    4: (15.8, -4.5, 1.0),
+    5: (15.7, -5.1, 2.7),
+    6: (14.8, -4.8, 2.7)
+}"""
+
 Points = {
-    1: (-1.0, -0.8, 3.14), 
-    2: (-1.5, 1.0, 1.57), 
-    3: (-0.5, 1.5, -1.57)
+    1: (15.9, -3.7, 0.0),
+    2: (15.0, -3.3, -0.72),
+    3: (15.0, -4.0, 0.0),
+    4: (15.8, -4.5, 0.72),
+    5: (15.7, -5.1, 1.0),
+    6: (14.8, -4.8, 1.0)
 }
+
+"""
+1: (0.9, 0.35, 3.14), 
+    2: (-0.1, -0.1, 1.57), 
+    3: (1.0, -0.5, -1.57),
+    4: (-0.2 ,-1.75, 3.14),"""
+
+"""1: (-1.0, -0.8, 3.14), 
+    2: (-1.5, 1.0, 1.57), 
+    3: (-0.5, 1.5, -1.57)"""
 
 def movebase_client(request):
     client = actionlib.SimpleActionClient('move_base',MoveBaseAction)

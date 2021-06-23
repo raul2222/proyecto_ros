@@ -1,8 +1,0 @@
-<launch>
-    <arg name="map_file" default="/home/almibar1/catkin_ws/maps/tb3_nave_map.yaml"/>
-    <node
-        name="map_server"
-        type="map_server"
-        pkg="map_server"
-        args="$(arg map_file)"/>
-</launch>
